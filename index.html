@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ROAMI — 數位旅遊指南</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif+TC:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --cream: #EEF2F8;
+      --sand: #D9E3F0;
+      --terracotta: #3560B0;
+      --terracotta-dark: #264A90;
+      --forest: #1A3A7A;
+      --forest-light: #2D52A0;
+      --ink: #0D1B3E;
+      --mist: #6B8CBE;
+      --gold: #7AAEE8;
+      --white: #F4F7FC;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--cream);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: rgba(238, 242, 248, 0.90);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(26, 58, 122, 0.12);
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--forest);
+      letter-spacing: 0.1em;
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--terracotta); }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--forest);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--terracotta); }
+
+    .nav-lang {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .lang-btn {
+      background: none;
+      border: 1px solid var(--mist);
+      padding: 0.3rem 0.7rem;
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      color: var(--forest);
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .lang-btn.active, .lang-btn:hover {
+      background: var(--forest);
+      color: var(--cream);
+      border-color: var(--forest);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 6rem 3rem 3rem;
+      position: relative;
+      overflow: hidden;
+      gap: 2rem;
+    }
+
+    .hero-bg-circle {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(53,96,176,0.15) 0%, transparent 70%);
+      right: -100px; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--forest);
+      color: var(--cream);
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      width: fit-content;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      line-height: 1.1;
+      color: var(--forest);
+      margin-bottom: 1rem;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--terracotta);
+    }
+
+    .hero-subtitle-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.1rem;
+      color: var(--forest-light);
+      font-weight: 300;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.05em;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      color: var(--mist);
+      line-height: 1.7;
+      max-width: 420px;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .hero-desc .zh {
+      font-family: 'Noto Serif TC', serif;
+      display: block;
+      font-size: 0.88rem;
+      margin-top: 0.3rem;
+      font-weight: 300;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .btn-primary {
+      background: var(--terracotta);
+      color: white;
+      padding: 0.85rem 2rem;
+      border-radius: 0.3rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--terracotta-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--forest);
+      padding: 0.85rem 2rem;
+      border-radius: 0.3rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      border: 1.5px solid var(--forest);
+      display: inline-block;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: var(--forest);
+      color: var(--cream);
+      transform: translateY(-2px);
+    }
+
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.8s 0.3s ease both;
+      position: relative;
+    }
+
+    .hero-map-card {
+      background: var(--white);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(26,58,122,0.18);
+      max-width: 340px;
+      width: 100%;
+      position: relative;
+    }
+
+    .map-card-tag {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--mist);
+      margin-bottom: 0.8rem;
+    }
+
+    .map-card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--forest);
+      margin-bottom: 0.3rem;
+    }
+
+    .map-card-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.85rem;
+      color: var(--mist);
+      margin-bottom: 1.2rem;
+    }
+
+    .map-illustration {
+      width: 100%;
+      height: 160px;
+      background: linear-gradient(135deg, #1A3A7A 0%, #2D52A0 40%, #7AAEE8 100%);
+      border-radius: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      margin-bottom: 1.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map-illustration::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='1' fill='rgba(255,255,255,0.15)'/%3E%3C/svg%3E");
+    }
+
+    .map-price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .map-price {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--terracotta);
+    }
+
+    .map-price-label {
+      font-size: 0.72rem;
+      color: var(--mist);
+      margin-top: 0.1rem;
+      font-family: 'Noto Serif TC', serif;
+    }
+
+    .map-buy-btn {
+      background: var(--forest);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 0.3rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .map-buy-btn:hover { background: var(--terracotta); }
+
+    .floating-tag {
+      position: absolute;
+      background: var(--gold);
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 2rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      top: -12px; right: 1.5rem;
+      box-shadow: 0 4px 12px rgba(53,96,176,0.4);
+    }
+
+    /* ── SECTION COMMON ── */
+    section { padding: 5rem 3rem; }
+
+    .section-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--terracotta);
+      margin-bottom: 0.8rem;
+      font-weight: 500;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 3.5vw, 2.8rem);
+      color: var(--forest);
+      margin-bottom: 0.5rem;
+      line-height: 1.2;
+    }
+
+    .section-title-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1rem;
+      color: var(--mist);
+      font-weight: 300;
+      margin-bottom: 3rem;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── PRODUCTS ── */
+    #products { background: var(--white); }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .product-card {
+      background: var(--cream);
+      border-radius: 1rem;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      cursor: pointer;
+      border: 1px solid rgba(26,58,122,0.08);
+    }
+
+    .product-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 48px rgba(26,58,122,0.15);
+    }
+
+    .product-cover {
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-cover-1 { background: linear-gradient(135deg, #1A3A7A, #3560B0); }
+    .product-cover-2 { background: linear-gradient(135deg, #2D52A0, #5A88D4); }
+    .product-cover-3 { background: linear-gradient(135deg, #1A3A7A, #7AAEE8); }
+
+    .product-cover::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 20px,
+        rgba(255,255,255,0.03) 20px,
+        rgba(255,255,255,0.03) 40px
+      );
+    }
+
+    .product-badge {
+      position: absolute;
+      top: 1rem; left: 1rem;
+      background: rgba(255,255,255,0.9);
+      color: var(--forest);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.6rem;
+      border-radius: 2rem;
+      font-weight: 600;
+    }
+
+    .product-body {
+      padding: 1.5rem;
+    }
+
+    .product-type {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mist);
+      margin-bottom: 0.5rem;
+    }
+
+    .product-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      color: var(--forest);
+      margin-bottom: 0.25rem;
+      line-height: 1.3;
+    }
+
+    .product-name-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.82rem;
+      color: var(--mist);
+      margin-bottom: 0.8rem;
+      font-weight: 300;
+    }
+
+    .product-desc {
+      font-size: 0.85rem;
+      color: var(--mist);
+      line-height: 1.6;
+      margin-bottom: 0.5rem;
+    }
+
+    .product-desc-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.78rem;
+      color: var(--mist);
+      line-height: 1.7;
+      margin-bottom: 1.2rem;
+      font-weight: 300;
+    }
+
+    .product-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(26,58,122,0.1);
+    }
+
+    .product-price {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .price-amount {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--terracotta);
+      line-height: 1;
+    }
+
+    .price-label {
+      font-size: 0.7rem;
+      color: var(--mist);
+      font-family: 'Noto Serif TC', serif;
+      margin-top: 0.2rem;
+    }
+
+    .buy-btn {
+      background: var(--forest);
+      color: white;
+      border: none;
+      padding: 0.7rem 1.4rem;
+      border-radius: 0.4rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.1rem;
+    }
+
+    .buy-btn:hover { background: var(--terracotta); }
+
+    .buy-btn .btn-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.65rem;
+      opacity: 0.8;
+    }
+
+    /* ── WHAT'S INSIDE ── */
+    #about { background: var(--forest); color: var(--cream); }
+
+    #about .section-label { color: var(--gold); }
+    #about .section-title { color: var(--cream); }
+    #about .section-title-zh { color: rgba(238,242,248,0.5); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .feature-item {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      border: 1px solid rgba(238,242,248,0.15);
+      border-radius: 0.8rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .feature-item:hover {
+      border-color: var(--gold);
+      background: rgba(122,174,232,0.08);
+    }
+
+    .feature-icon {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .feature-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--cream);
+      margin-bottom: 0.3rem;
+    }
+
+    .feature-title-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.78rem;
+      color: rgba(238,242,248,0.5);
+      margin-bottom: 0.8rem;
+    }
+
+    .feature-desc {
+      font-size: 0.82rem;
+      color: rgba(238,242,248,0.65);
+      line-height: 1.6;
+    }
+
+    /* ── TESTIMONIAL / TRUST ── */
+    #trust { background: var(--sand); }
+
+    .trust-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .trust-card {
+      background: var(--white);
+      border-radius: 0.8rem;
+      padding: 1.5rem;
+      border-left: 3px solid var(--terracotta);
+    }
+
+    .trust-quote {
+      font-style: italic;
+      color: var(--forest);
+      line-height: 1.7;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .trust-quote-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.78rem;
+      color: var(--mist);
+      line-height: 1.7;
+      margin-bottom: 1rem;
+      font-weight: 300;
+    }
+
+    .trust-author {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--terracotta);
+      text-transform: uppercase;
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,26,24,0.6);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--white);
+      border-radius: 1.2rem;
+      padding: 2.5rem;
+      max-width: 440px;
+      width: 90%;
+      position: relative;
+      transform: translateY(20px);
+      transition: transform 0.3s;
+      box-shadow: 0 40px 80px rgba(45,74,62,0.2);
+    }
+
+    .modal-overlay.active .modal {
+      transform: translateY(0);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--mist);
+      line-height: 1;
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--forest);
+      margin-bottom: 0.3rem;
+    }
+
+    .modal-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.85rem;
+      color: var(--mist);
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-price {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--terracotta);
+      margin-bottom: 0.3rem;
+    }
+
+    .modal-price-zh {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.8rem;
+      color: var(--mist);
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1.5px solid rgba(45,74,62,0.2);
+      border-radius: 0.4rem;
+      font-size: 0.9rem;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      background: var(--cream);
+      margin-bottom: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .modal-input:focus { border-color: var(--forest); }
+
+    .modal-submit {
+      width: 100%;
+      background: var(--terracotta);
+      color: white;
+      border: none;
+      padding: 0.9rem;
+      border-radius: 0.4rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
+    }
+
+    .modal-submit:hover { background: var(--terracotta-dark); }
+
+    .modal-note {
+      font-size: 0.72rem;
+      color: var(--mist);
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .modal-note .zh {
+      font-family: 'Noto Serif TC', serif;
+      display: block;
+      margin-top: 0.2rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink);
+      color: rgba(245,240,232,0.6);
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--cream);
+      letter-spacing: 0.15em;
+    }
+
+    .footer-logo span { color: var(--gold); }
+
+    .footer-tagline {
+      font-family: 'Noto Serif TC', serif;
+      font-size: 0.82rem;
+      color: rgba(245,240,232,0.4);
+    }
+
+    .footer-copy {
+      font-size: 0.75rem;
+      color: rgba(245,240,232,0.3);
+      margin-top: 1rem;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; padding: 5rem 1.5rem 2rem; }
+      .hero-visual { display: none; }
+      section { padding: 4rem 1.5rem; }
+      footer { padding: 2rem 1.5rem; }
+    }
+
+    /* ── SUCCESS STATE ── */
+    .success-msg {
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .success-msg .checkmark {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 1rem;
+    }
+
+    .success-msg h3 {
+      font-family: 'Playfair Display', serif;
+      color: var(--forest);
+      margin-bottom: 0.3rem;
+      font-size: 1.3rem;
+    }
+
+    .success-msg .zh {
+      font-family: 'Noto Serif TC', serif;
+      color: var(--mist);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="#">ROA<span>MI</span></a>
+    <ul class="nav-links">
+      <li><a href="#products">Shop / 商店</a></li>
+      <li><a href="#about">About / 關於</a></li>
+    </ul>
+    <div class="nav-lang">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('zh')">中文</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg-circle"></div>
+    <div class="hero-content">
+      <div class="hero-badge">Digital Guides · 數位指南</div>
+      <h1 class="hero-title">
+        Explore Taiwan<br>
+        <em>with confidence.</em>
+      </h1>
+      <p class="hero-subtitle-zh">用 ROAMI，輕鬆探索台灣每個角落</p>
+      <p class="hero-desc">
+        Curated PDF travel guides for students and adventurers navigating Taiwan's most beautiful destinations.
+        <span class="zh">為學生與旅行者精心製作的台灣旅遊 PDF 指南</span>
+      </p>
+      <div class="hero-cta">
+        <a href="#products" class="btn-primary">Browse Guides · 瀏覽指南</a>
+        <a href="#about" class="btn-secondary">Learn More · 了解更多</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-map-card">
+        <div class="floating-tag">⭐ 熱銷 Bestseller</div>
+        <p class="map-card-tag">Featured Guide · 精選指南</p>
+        <h3 class="map-card-title">Hualien Travel Guide</h3>
+        <p class="map-card-zh">花蓮旅遊指南</p>
+        <div class="map-illustration">🏔️</div>
+        <div class="map-price-row">
+          <div>
+            <div class="map-price">NT$199</div>
+            <div class="map-price-label">新台幣</div>
+          </div>
+          <button class="map-buy-btn" onclick="openModal('hualien')">Buy Now · 立即購買</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="products">
+    <div style="max-width:1100px;margin:0 auto;">
+      <p class="section-label">Digital Downloads · 數位下載</p>
+      <h2 class="section-title">Our Guides</h2>
+      <p class="section-title-zh">我們的旅遊指南系列</p>
+      <div class="products-grid">
+
+        <!-- Product 1 -->
+        <div class="product-card" onclick="openModal('newstudent')">
+          <div class="product-cover product-cover-1">
+            🎓
+            <div class="product-badge">PDF Guide</div>
+          </div>
+          <div class="product-body">
+            <p class="product-type">Student Resource · 學生資源</p>
+            <h3 class="product-name">New Student Guide</h3>
+            <p class="product-name-zh">新生入學指南</p>
+            <p class="product-desc">Everything you need to know as a new student — campus life, admin tips, local essentials, and survival hacks.</p>
+            <p class="product-desc-zh">涵蓋校園生活、行政事務、生活必需品及實用技巧，新生必備完整指南。</p>
+            <div class="product-footer">
+              <div class="product-price">
+                <span class="price-amount">NT$149</span>
+                <span class="price-label">新台幣 · 一次付清</span>
+              </div>
+              <button class="buy-btn">
+                Buy Now
+                <span class="btn-zh">立即購買</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 2 -->
+        <div class="product-card" onclick="openModal('hualien')">
+          <div class="product-cover product-cover-2">
+            🏔️
+            <div class="product-badge">PDF Guide</div>
+          </div>
+          <div class="product-body">
+            <p class="product-type">Travel Guide · 旅遊指南</p>
+            <h3 class="product-name">Hualien Travel Guide</h3>
+            <p class="product-name-zh">花蓮旅遊指南</p>
+            <p class="product-desc">Gorges, beaches, night markets, and hidden trails — your complete companion for exploring Hualien.</p>
+            <p class="product-desc-zh">峽谷、海灘、夜市與秘境步道，全方位探索花蓮的完整旅遊指南。</p>
+            <div class="product-footer">
+              <div class="product-price">
+                <span class="price-amount">NT$199</span>
+                <span class="price-label">新台幣 · 一次付清</span>
+              </div>
+              <button class="buy-btn">
+                Buy Now
+                <span class="btn-zh">立即購買</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 3 -->
+        <div class="product-card" onclick="openModal('stone')">
+          <div class="product-cover product-cover-3">
+            🌿
+            <div class="product-badge">PDF Guide</div>
+          </div>
+          <div class="product-body">
+            <p class="product-type">Day Trip · 一日遊</p>
+            <h3 class="product-name">Stone Community Hidden Gem Day Trip</h3>
+            <p class="product-name-zh">石頭社區秘境一日遊</p>
+            <p class="product-desc">A curated off-the-beaten-path itinerary through the Stone Community — local food, artisan shops, and scenic spots most tourists never find.</p>
+            <p class="product-desc-zh">精心規劃的石頭社區秘境行程，帶你發現當地美食、工藝小店與絕大多數遊客錯過的美麗景點。</p>
+            <div class="product-footer">
+              <div class="product-price">
+                <span class="price-amount">NT$179</span>
+                <span class="price-label">新台幣 · 一次付清</span>
+              </div>
+              <button class="buy-btn">
+                Buy Now
+                <span class="btn-zh">立即購買</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT / FEATURES -->
+  <section id="about">
+    <div style="max-width:1000px;margin:0 auto;text-align:center;">
+      <p class="section-label">Why ROAMI · 為何選擇 ROAMI</p>
+      <h2 class="section-title">Built for real explorers</h2>
+      <p class="section-title-zh">為真正的探索者而生</p>
+      <div class="features-grid">
+        <div class="feature-item">
+          <span class="feature-icon">📄</span>
+          <p class="feature-title">Instant PDF Download</p>
+          <p class="feature-title-zh">即時 PDF 下載</p>
+          <p class="feature-desc">Get your guide immediately after purchase — no waiting, no shipping.</p>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🗺️</span>
+          <p class="feature-title">Local Insider Knowledge</p>
+          <p class="feature-title-zh">在地達人知識</p>
+          <p class="feature-desc">Written by people who actually live and travel in these places.</p>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📱</span>
+          <p class="feature-title">Mobile Friendly</p>
+          <p class="feature-title-zh">手機友善格式</p>
+          <p class="feature-desc">Read on any device — phone, tablet, or laptop. No app needed.</p>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔄</span>
+          <p class="feature-title">Always Updated</p>
+          <p class="feature-title-zh">定期更新</p>
+          <p class="feature-desc">Buy once, get free updates when we refresh our guides.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <section id="trust">
+    <div style="max-width:900px;margin:0 auto;text-align:center;">
+      <p class="section-label">Reviews · 讀者評價</p>
+      <h2 class="section-title">What readers say</h2>
+      <p class="section-title-zh">讀者怎麼說</p>
+      <div class="trust-row">
+        <div class="trust-card">
+          <p class="trust-quote">"The Hualien guide saved us so much time — every recommendation was spot on and felt genuinely local."</p>
+          <p class="trust-quote-zh">「花蓮指南幫我們省了很多時間，每個推薦都非常精準，感覺像是在地人帶路。」</p>
+          <p class="trust-author">— Yi-Chen L., NDHU Student</p>
+        </div>
+        <div class="trust-card">
+          <p class="trust-quote">"As a new international student, the New Student Guide was exactly what I needed. Incredibly practical."</p>
+          <p class="trust-quote-zh">「作為國際新生，這份新生指南正是我需要的，非常實用。」</p>
+          <p class="trust-author">— Marcus T., Exchange Student</p>
+        </div>
+        <div class="trust-card">
+          <p class="trust-quote">"The Stone Community day trip guide took us to places we never would have found on our own. Absolutely worth it."</p>
+          <p class="trust-quote-zh">「石頭社區一日遊指南帶我們去了自己絕對找不到的地方，非常值得。」</p>
+          <p class="trust-author">— Mei-Ling W., Traveller</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">ROA<span>MI</span></div>
+    <p class="footer-tagline">數位旅遊指南 · Digital Travel Guides for Taiwan</p>
+    <p class="footer-copy">© 2025 ROAMI. University Project — For Educational Purposes · 大學專題，僅供教育用途</p>
+  </footer>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script>
+    const products = {
+      newstudent: {
+        name: 'New Student Guide',
+        zh: '新生入學指南',
+        price: 'NT$149',
+        priceZh: '新台幣 149 元',
+        emoji: '🎓'
+      },
+      hualien: {
+        name: 'Hualien Travel Guide',
+        zh: '花蓮旅遊指南',
+        price: 'NT$199',
+        priceZh: '新台幣 199 元',
+        emoji: '🏔️'
+      },
+      stone: {
+        name: 'Stone Community Hidden Gem Day Trip',
+        zh: '石頭社區秘境一日遊',
+        price: 'NT$179',
+        priceZh: '新台幣 179 元',
+        emoji: '🌿'
+      }
+    };
+
+    function openModal(id) {
+      const p = products[id];
+      document.getElementById('modal-body').innerHTML = `
+        <div style="text-align:center;margin-bottom:1.2rem;font-size:2.5rem">${p.emoji}</div>
+        <h2 class="modal-title">${p.name}</h2>
+        <p class="modal-zh">${p.zh}</p>
+        <div class="modal-price">${p.price}</div>
+        <p class="modal-price-zh">${p.priceZh} · PDF 數位下載</p>
+        <input class="modal-input" type="email" placeholder="Email address · 電子郵件地址" id="email-input"/>
+        <button class="modal-submit" onclick="handlePurchase('${id}')">Complete Purchase · 完成購買</button>
+        <p class="modal-note">
+          Instant PDF delivery to your inbox.
+          <span class="zh">購買後立即寄送 PDF 至您的信箱</span>
+        </p>
+      `;
+      document.getElementById('modal').classList.add('active');
+    }
+
+    function handlePurchase(id) {
+      const email = document.getElementById('email-input').value;
+      if (!email || !email.includes('@')) {
+        document.getElementById('email-input').style.borderColor = '#C0704A';
+        document.getElementById('email-input').placeholder = 'Please enter a valid email · 請輸入有效的電子郵件';
+        return;
+      }
+      const p = products[id];
+      document.getElementById('modal-body').innerHTML = `
+        <div class="success-msg">
+          <span class="checkmark">✅</span>
+          <h3>Thank you! · 謝謝您！</h3>
+          <p class="zh" style="margin-top:0.5rem">您的《${p.zh}》已成功訂購。<br>Your <strong>${p.name}</strong> is on its way to ${email}.</p>
+          <p style="margin-top:1rem;font-size:0.75rem;color:var(--mist);font-family:'Noto Serif TC',serif;">（大學專題演示 — 實際不會寄送 / University demo — no actual delivery）</p>
+        </div>
+      `;
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+
+    function closeModalOutside(e) {
+      if (e.target === document.getElementById('modal')) closeModal();
+    }
+
+    function setLang(lang) {
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      // Language is already bilingual by design — this is a visual toggle indicator
+    }
+
+    // Escape key closes modal
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>
